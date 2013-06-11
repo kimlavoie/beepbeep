@@ -1,0 +1,25 @@
+<trace>
+
+<message>
+ <p>
+   <a>0</a>
+   <b>0</b>
+ </p>
+ <p>
+   <a>1</a>
+   <b>1</b>
+ </p>
+</message>
+ 
+<message>
+ <p>
+   <a>0</a>
+   <b>0</b>
+ </p>
+ <p>
+   <a>1</a>
+   <b>2</b>
+ </p>
+</message>
+
+</trace>

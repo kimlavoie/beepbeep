@@ -1,0 +1,8 @@
+# ------------------------------------------------------------------
+# ennemies can't target an other enemy
+#
+# @Caption("D8");
+# ------------------------------------------------------------------
+
+G(∀x ∈ /message/player/id : (∀y ∈ message/ennemies/targetId : (x=y))) 
+

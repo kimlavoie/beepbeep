@@ -1,0 +1,370 @@
+BeepBeep: A Runtime Monitor and Trace Validator
+===============================================
+
+BeepBeep is a *runtime monitor*: it receives a stream of events produced
+by some application or process, and constantly analyzes it against a
+specification given beforehand. When the stream of events deviates from what
+the specification stipulates, a signal is sent which can then be piped into
+another program for further processing. It can also work in offline
+mode and analyze a pre-recorded trace of events taken from a file.
+
+This generic process can be put to numerous uses. Given log events from a
+web server, BeepBeep can work as an intrusion detection system. When fed
+debug output from a program under development, the tool can prove useful to
+detect bugs.
+
+Finally, BeepBeep can either be used either as a stand-alone program running
+from the command line, or as a Java library that can be directly integrated
+into your application.
+
+Table of contents                                                    {#toc}
+-----------------
+
+- [A Quick Example](#quickstart)
+- [Compiling and installing BeepBeep](#install)
+- [Events and Event Traces](#traces)
+- [Writing Properties on Event Traces](#properties)
+- [Command-Line Options](#cli)
+- [Some Applications](#applications)
+- [About the Author](#about)
+
+A Quick Example                                               {#quickstart}
+---------------
+
+Let us consider a simple program which, about once per second, generates an
+event of the following form and sends it to the standard output:
+
+    <message>
+      some integer value
+      <q>some integer value</q>
+    </message>
+
+In BeepBeep's `dist` folder, a program called TraceGenerator does exactly
+that. To be convinced, call it on the command line by typing:
+
+    java -jar TraceGenerator.jar
+
+Observe that the program indeed generates events of that form (actually, the
+TraceGenerator can do many more things); hit Ctrl-C to stop the generator.
+Suppose now we want to be alerted whenever the parameter `p` has a value
+greater than 7. In the example folder, the file called `GreaterThan7.ltlfo`
+contains that specification. To detect it automatically, we pipe the
+generator's output into the BeepBeep runtime monitor by typing:
+
+    java -jar TraceGenerator.jar | java -jar BeepBeep.jar -f Examples/GreaterThan7.ltlfo
+
+The events can no longer be seen, but BeepBeep shows an event counter that
+increments at the rate of one per second, indicating they are indeed
+received and processed. At the end of the line, the "Verdict" field
+indicates the state of the property to monitor. It should show the value
+"INCONCLUSIVE" as long as no event with parameter `p` greater than 7 has
+been received, and switch to "TRUE" upon encountering the first event with
+`p` > 5. This is what you will observe if you wait long enough.
+
+This example was deliberately simple to illustrate the principle. In an
+actual scenario, many things are likely to be different:
+
+- Events will be received from a real running program, and have an
+  arbitrarily complex structure containing many more parameters.
+- These events may be written to an arbitrary named pipe instead of the
+  standard output (or even read from a file).
+- One may not be interested in looking at BeepBeep's output in the terminal,
+  but rather pipe a trimmed down version of this output to another program
+  for further processing.
+- The properties to monitor will be much more complex. BeepBeep's
+  [input language](#properties) is very expressive and can be used to
+  represent intricate constraints between events. As an exemple, take a look
+  at example file `PinQ.ltlfo`, whose contents represents the property:
+  "no value appearing in parameter `p` may reappear in a subsequent event as
+  the value of parameter `q`".
+
+[Back to top](#toc)
+
+Compiling and Installing BeepBeep                                {#install}
+---------------------------------
+
+A precompiled distribution of BeepBeep can be found on
+[SourceForge](http://sourceforge.net/projects/beepbeep/); however this
+distribution is not updated regularly. To obtain the latest version, it is
+recommended that you download and compile the sources (the process is
+simple).
+
+First make sure you have the following installed:
+
+- The Java Development Kit (JDK) to compile. BeepBeep was developed and
+  tested on version 6 of the JDK, but it is probably safe to use any
+  later version. Moreover, it most probably compiles on the JDK 5, although
+  this was not tested.
+- [Ant]() to automate the compilation and build process
+
+Download the sources for BeepBeep from [SourceForge](http://sourceforge.net/projects/beepbeep/)
+or clone the repository using Git:
+
+    git clone http://sjsjsj
+
+Move to the directory called `1.5`, and compile the sources by simply
+typing:
+
+    ant
+
+This will produce a file called `BeepBeep.jar` in the `dist` subfolder.
+This file is runnable and stand-alone, so it can be moved around to the
+location of your choice.
+
+[Back to top](#toc)
+
+Events and Event Traces                                           {#traces}
+-----------------------
+
+The basic building block for BeepBeep is the *event*. An event is a piece of
+data that is transmitted to the monitor at some moment in time. It can
+represent various things depending on the context and has no predetermined
+structure. For example, in the case of monitoring web server activity, one
+could instruct the server to produce an event every time a page is requested
+by a client. Similarly, when debugging a program under development, one
+could insert into the code debugging instructions notifying of particular
+function calls and arguments (similar to printing this information into a
+console). This process of modifying a program to produce events to be sent
+to a monitor is called *instrumentation*. It is up to the developer to
+instrument the system to be monitored in a suitable way.
+
+The data contained in an event is transmitted to BeepBeep as an XML string.
+All parameters must be enclosed in a single element named `message` (and not
+`event`, for historical reasons). This is the only constraint on events (up
+to a few other restrictions on the XML syntax, see the code documentation
+for details); the number, name and nesting of tags inside the `message`
+element is completely up to the user; moreover, different events need not
+have the same structure at all. For example, here is a possible event that
+would represent a user clicking on a button in a GUI application:
+
+    <message>
+      <event-name>Click</event-name>
+      <position>
+        <x>34</x>
+        <y>56</y>
+      </position>
+      <button>Left</button>
+      <time>4909501</time>
+      <selected-items>
+        <id>4</id>
+        <id>7</id>
+        <id>12</id>
+      </selected-items>
+    </message>
+
+Again, it is up to the person taking care of the instrumentation of the
+system to be monitored to define a structure and a set of parameters that
+is meaningful for that particular context.
+
+[Back to top](#toc)
+
+Passing Events to BeepBeep
+--------------------------
+
+There are three ways one can pass events to BeepBeep, which can be
+specified using [command-line parameters](#cli):
+
+1. By reading a file. The trace is completely recorded beforehand and
+   written to some file. BeepBeep reads the file and processes each event
+   sequentially. Once the end of the file is reached, the trace is
+   considered finished and the monitor exits.
+2. By reading a pipe. In this scenario, one first creates some named pipe
+   (e.g. using the `mkfifo` command in Linux). The program to be monitored
+   and BeepBeep are started concurrently; the program writes events to the
+   pipe as it executes, while BeepBeep reads and fetches these events from
+   the pipe at the same time. Events are saved into a buffer on the monitor
+   side; provided that this buffer remains mostly empty, BeepBeep can then
+   provide real-time feedback on the state of the property to monitor.
+3. By reading the standard input. This is just a special case of #2.
+
+In case #1, the end of the file indicates the end of the trace. However, in
+cases #2 and #3, new events may always come; hence BeepBeep does not exit
+when no new characters can be read from the pipe, and keeps polling the
+pipe forever. To explicitly notify BeepBeep that no new events will come
+(such as when the system to monitor has itself stopped), one must send the
+End-Of-Transmission (EOT) character --that is, a single byte with value
+0x04.
+
+In all cases, BeepBeep expects its input to be encoded with UTF-8.
+
+[Back to top](#toc)
+
+Writing Properties on Event Traces                            {#properties}
+----------------------------------
+
+The properties to monitor in BeepBeep are expressed as formulas in an
+extension of *Linear Temporal Logic* (LTL), called LTL-FO+. The semantics of
+this logic is defined on a *trace* (i.e. a sequence) of XML messages being
+sent or received; the content of these messages is accessible through
+(simple) XPath expressions and can be stored into variables for future use.
+
+### Accessing message contents
+
+Data inside a message can be accessed using *first-order quantifiers*:
+
+1. ∀x ∈ π means "for every x in π". Here, x is a variable, and π is a path
+   expression used to fetch possible values for x. For example, if φ is a
+   formula where x appears, then ∀x ∈ /tag1/tag2 : φ means: every value at
+   the end of `/tag1/tag2` satisfies φ.
+
+2. ∃x ∈ π means "some x in π". Hence, ∃x ∈ /tag1/tag2 : φ means: there
+   exists some value at the end of `/tag1/tag2` which satisfies φ.
+
+For example, consider the following XML message:
+
+    <message>
+      <action>login</action>
+      <username>frank</username>
+      <books-return>
+        <book>123</book>
+        <book>456</book>
+        <book>789</book>
+      </books-return>
+      <books-borrow>
+        <book>321</book>
+        <book>456</book>
+      </books-borrow>
+    </message>
+
+To express the fact that the `action` element of this message contains the
+value `login`, one can write in LTL-FO+:
+
+∃x ∈ /message/action : x = "login"
+
+The previous formula says literally: in the current message, there exists a
+value x at the end of the path `/message/action` such that x = "login".
+
+LTL-FO+ provides all the familiar Boolean connectives: ∧ ("and"), ∨ ("or"),
+¬ ("not"), → ("if then"), ⊕ ("xor"). They can be used to combine expressions
+as usual. For example, to express the fact that the book with ID "444" is
+not present in the current message, one can write:
+
+∀x ∈ /message/books-return/book : ¬ (x = "444")
+
+This reads as: in the current message, every value x at the end of the path
+`/message/books-return/book` is not equal to 444.
+
+One can quantify multiple times to compare different values in the current
+message. For example:
+
+∀x ∈ `/message/books-return/book` : (∀y ∈ `/message/books-borrow/book` : ¬ (x = y))
+
+In English: for every x at the end of `/message/books-return/book`, and
+every y at the end of `/message/books-borrow/book`, we never have that x =
+y; in other words, the returned books must be different from the borrowed
+books. (This would be false in the previous message, as "456" appears in
+both sides.)
+
+### Sequences of messages
+
+Properties can then be defined on sequences of messages using the following
+LTL temporal operators (see also
+[Wikipedia](http://en.wikipedia.org/wiki/Linear_Temporal_Logic)):
+
+1. X means "in the next message". For example, if φ is a formula, X φ says
+   that φ will be true in the next message.
+2. G means "globally". For example, if φ is a formula, G φ says that φ is
+   true in the current message, and will be true for all remaining messages
+   in the trace.
+3. F means "eventually". Writing F φ says that φ is either true in the
+   current message, or will become true for at least one message in the
+   future.
+4. U means "until". If φ and &psi; are formulas, writing φ U &psi; says that
+   &psi; will be true eventually, and in the meantime, φ is true for every
+   message until &psi; becomes true.
+
+For example, in order to say that "a user must eventually log out", one can
+write:
+
+F (∃x ∈ /message/action : x = "logout")
+
+The previous formula says: eventually, some message in the trace will
+fulfill the condition that some tag at the end of path `/action` will have
+the value "logout".
+
+To say that borrowed books and returned books are never the same, one can
+take the formula shown previously, and enclose it within a G operator,
+yielding:
+
+G (∀x ∈ /message/books-return/book : (∀y ∈ /message/books-borrow/book : ¬ (x = y)))
+</span>
+
+It is also possible for a variable to keep its value across be reused at a
+later time in the trace. For example:
+
+G (∀x ∈ /message/books-borrow/book : (F (∀y ∈ /message/books-return/book : x = y)))
+
+This formula says that globally, every book appearing in the section
+`books-borrow` of some message must eventually reappear in some future
+message in the `books-return` section. Here, the value of x is retrieved in
+some message, and reused in a future message. This capability of freely
+mixing temporal operators and quantifiers makes LTL-FO+ a very powerful
+language to express constraints on sequences of XML messages.
+
+These operators can be nested or combined with traditional boolean
+connectives to create compound statements.
+
+[Back to top](#toc)
+
+Command-Line Options                                                 {#cli}
+--------------------
+
+Launch BeepBeep by typing:
+
+    java -jar BeepBeep.jar -f filename <options>
+
+Possible options:
+
+`-f filename`
+:  Read the property to monitor from filename. This is not an option: this
+   parameter is mandatory.
+`-p pipename`
+:  Fetch events by reading from a pipe called pipename
+`-t filename`
+:  Fetch events by reading the trace filename
+`--slowdown x`
+:  Force BeepBeep to take a pause of x milliseconds after processing each
+   event
+`--verbosity x`
+:  Set verbosity level to x (default: 1). If set to 0, BeepBeep will not
+   display anything on the standard output (except if the `--stats` option
+   is used)
+`--stats`
+:  At the end of the trace, make BeepBeep display statistics about its
+   processing (CPU time, final verdict, memory use). If the `--verbosity`
+   option is set to 0, only a comma-separated list of values is printed.
+`--csv`
+:  After every event processed, output statistics (CPU time, current
+   verdict, buffer size, etc.) to the standard error in CSV format. The
+   regular display is still printed on the standard output, so make sure to
+   redirect stderr to avoid garbled text.
+`--version`
+:  Print version and build number
+`--help`
+:  Show the help text
+
+If neither `-p` nor `-t`is given, BeepBeep will fetch events from the
+standard input.
+
+
+Some Applications                                           {#applications}
+-----------------
+
+Past versions of BeepBeep have been used, for example, for the runtime
+monitoring of web service interactions. For more information:
+
+- S. Hallé and R. Villemaire. (2012). Runtime Enforcement of Web Service
+  Message Contracts with Data. In IEEE T. Services Computing, 5 (2),
+  192-206. [Article](http://doi.ieeecomputersociety.org/10.1109/TSC.2011.10)
+
+Stay tuned! More to come soon...
+
+[Back to top](#toc)
+
+About the Author                                                   {#about}
+----------------
+
+BeepBeep was developed by Sylvain Hallé, currently an Assistant Professor
+at Université du Québec à Chicoutimi, Canada.
+
+[Back to top](#toc)

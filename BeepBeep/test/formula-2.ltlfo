@@ -1,0 +1,1 @@
+G ((//name = ElephantUpgrade) → (X (G (¬(//name = ElephantUpgrade)))))

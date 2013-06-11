@@ -1,0 +1,11 @@
+# --------------------------------------------------------------
+# Example of formula accepted by BeepBeep 1.5
+# Paths inside quantifiers can be any XPath expression, and
+# even contain references to previously quantified variables
+#
+# @Caption("P1");
+# @Description("Hello
+#  world");
+# --------------------------------------------------------------
+
+G (∀ x ∈ //p/a : (∀ y ∈ //p[a=$x]/b : x=y))

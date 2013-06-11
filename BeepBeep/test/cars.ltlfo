@@ -1,0 +1,1 @@
+G (∀ x2 ∈ /message[action="Enter"]/car : (X ((¬(∃ x3 ∈ /message[action="Enter"] : (x2=x3))) U (∃ x4 ∈ /message[action="Exit"] : (x2=x4)))))
