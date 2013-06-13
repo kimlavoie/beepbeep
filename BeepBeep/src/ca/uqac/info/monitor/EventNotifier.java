@@ -18,7 +18,6 @@
 package ca.uqac.info.monitor;
 
 import ca.uqac.info.util.PipeCallback;
-
 import java.io.*;
 import java.util.Formatter;
 import java.util.Iterator;
@@ -126,7 +125,8 @@ class EventNotifier implements PipeCallback<String>
 	  // New metadata "ReportOn" help decide when to report bugs 
 	  if(metadata.get("ReportOn").toLowerCase().equals("true") || metadata.get("ReportOn").toLowerCase().equals("both"));
 	  {
-		System.out.print(trace);
+		BugReporter report = new BugReporter("GreaterThan7.ltlfo", "Greater than 7", trace);
+		report.sendReport();
 	  }
 	  //
 	}
