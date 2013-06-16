@@ -42,7 +42,7 @@
         </manifest>
         <fileset dir="${build}"/>
         <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-cli-1.2.jar"/>
-        <zipfileset src="${lib}/mysql-connector-java-5.1.25-bin.jar"/>
+        <zipfileset src="${lib}/activation.jar"/>
     </jar>
     <jar
       destfile="${dist}/TraceGenerator.jar"

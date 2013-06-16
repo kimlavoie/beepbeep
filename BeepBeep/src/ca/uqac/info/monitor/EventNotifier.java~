@@ -128,7 +128,7 @@ class EventNotifier implements PipeCallback<String>
 	  //{
 		//Added by Raphael Laguerre
 		//Test the add of a bug to Mantis by using JDBC to interact with its database
-		BugReporterMantisJDBC report = new BugReporterMantisJDBC("GreaterThan7.ltlfo", "Greater than 7", trace);
+		BugReporterMantisJDBC report = new BugReporterMantisJDBC("GreaterThan7.ltlfo", "Greater than 7", trace, "http://localhost/mantis/api/soap/mantisconnect.php", 			"administrator", "pass");	
 		report.sendReport();	
 	  //}
 	  //

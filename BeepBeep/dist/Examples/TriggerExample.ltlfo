@@ -1,0 +1,14 @@
+# ------------------------------------------------------------------
+# Example property
+# Parameter x is always greater than 3
+#
+# We set a caption for this monitor
+# @Caption("F3");
+#
+# Example of a trigger: when the property below becomes false,
+# the script ActionWhenFalse.sh will be called.
+#
+# @OnFalse("ActionWhenFalse.sh");
+# ------------------------------------------------------------------
+
+G (/message/x > 3)

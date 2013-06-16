@@ -241,7 +241,8 @@ public class BeepBeepMonitor
     }
     catch (InterruptedException e1)
     {
-      // Thread is finished     
+      // Thread is finished
+      OutilsJDBC.closeConnection(co); //Added by Raphael Laguerre
     }
     if (tcp_port > 0 && m_serverSocket != null)
     {
