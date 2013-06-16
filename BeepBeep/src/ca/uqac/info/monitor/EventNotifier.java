@@ -18,7 +18,6 @@
 package ca.uqac.info.monitor;
 
 import ca.uqac.info.util.PipeCallback;
-
 import java.io.*;
 import java.util.Formatter;
 import java.util.Iterator;
@@ -39,7 +38,8 @@ class EventNotifier implements PipeCallback<String>
   public long m_totalTime = 0;
   public long heapSize = 0;
   public int m_slowdown = 0;
-  
+  public String trace = new String();		// Modified by Kim Lavoie
+
   public EventNotifier()
   {
     m_monitors = new Vector<Monitor>();
@@ -74,6 +74,8 @@ class EventNotifier implements PipeCallback<String>
   public void notify(String token, long buffer_size) throws CallbackException
   {
     m_numEvents++;
+    trace += token;		// Modified by Kim Lavoie     
+ 
     //System.out.println(ESC_HOME + ESC_CLEARLINE + "Event received");
     if (m_mirrorEventsOnStdout)
     {
@@ -118,9 +120,30 @@ class EventNotifier implements PipeCallback<String>
         Map<String,String> metadata = m_metadatas.elementAt(i);
         String command = null;
         if (new_out == Monitor.Verdict.TRUE)
-          command = metadata.get("OnTrue");
+        {
+	  command = metadata.get("OnTrue");
+	  // Modified by Kim Lavoie
+	  // New metadata "ReportOn" help decide when to report bugs 
+	  //if(metadata.get("ReportOn").toLowerCase().equals("true") || metadata.get("ReportOn").toLowerCase().equals("both"));
+	  //{
+		//Added by Raphael Laguerre
+		//Test the add of a bug to Mantis via its web service interface
+		BugReporterMantisWS report = new BugReporterMantisWS("GreaterThan7.ltlfo", "Greater than 7", trace, "http://localhost/mantis/api/soap/mantisconnect.php", 			"administrator", "pass");	
+		report.sendReport();	
+	  //}
+	  //
+	}
         if (new_out == Monitor.Verdict.FALSE)
-          command = metadata.get("OnFalse");
+        {
+	  command = metadata.get("OnFalse");
+	  // Modified by Kim Lavoie
+	  // New metadata "ReportOn" help decide when to report bugs 
+	  if(metadata.get("ReportOn").toLowerCase().equals("false") || metadata.get("ReportOn").toLowerCase().equals("both"));
+	  {
+		System.out.print(trace);
+	  }
+	  //
+	}
         if (command != null)
         {
           try

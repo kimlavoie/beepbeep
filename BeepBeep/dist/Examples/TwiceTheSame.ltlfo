@@ -1,0 +1,6 @@
+# ------------------------------------------------------------------
+# Example property
+# Eventually, parameter x has the same value in two successive events
+# ------------------------------------------------------------------
+
+F (∀ x ∈ /message/p : X (∀ y ∈ /message/p : (x = y)))

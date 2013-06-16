@@ -1,0 +1,9 @@
+# ------------------------------------------------------------------
+# Example property
+# No value appearing in parameter p may reappear in a subsequent event as
+# the value of parameter q
+#
+# @Caption("PQ");
+# ------------------------------------------------------------------
+
+G (∀ x ∈ /message/p : X (G (∀ y ∈ /message/q : (¬ (x = y)))))

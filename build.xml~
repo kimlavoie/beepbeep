@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project name="BeepBeep" default="dist" basedir=".">
+
+  <description>Build file for BeepBeep 1.5+</description>
+  
+  <!-- Set global properties for this build -->
+  <property name="src" location="BeepBeep/src"/>
+  <property name="build" location="BeepBeep/bin"/>
+  <property name="lib" location="BeepBeep/lib"/>
+  <property name="dist"  location="BeepBeep/dist"/>
+  <path id="classpath">
+    <fileset dir="${lib}" includes="**/*.jar"/>
+  </path>
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+    <mkdir dir="${dist}"/>
+  </target>
+
+  <target name="compile" depends="init" description="Compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac
+      srcdir="${src}"
+      destdir="${build}"          
+      includeantruntime="false">
+      <classpath refid="classpath"/>
+    </javac>
+  </target>
+
+  <target name="create_run_jar" depends="compile" description="Create the runnable JAR">
+    <jar
+      destfile="${dist}/BeepBeep.jar"
+      filesetmanifest="mergewithoutmain"
+      excludes="**/BeepBeepTest/*.class">
+        <manifest>
+            <attribute name="Main-Class" 
+              value="ca.uqac.info.monitor.BeepBeepMonitor"/>
+            <attribute name="Class-Path" value="."/>
+        </manifest>
+        <fileset dir="${build}"/>
+        <zipfileset excludes="META-INF/*.SF" src="**/*.jar"/>
+	<zipfileset src="${lib}/activation.jar"/>
+	<zipfileset src="${lib}/ant-launcher.jar"/>
+	<zipfileset src="${lib}/ant-testutil.jar"/>	
+	<zipfileset src="${lib}/ant.jar"/>
+	<zipfileset src="${lib}/axis-ant.jar"/>
+	<zipfileset src="${lib}/axis-REV609819.jar"/>
+	<zipfileset src="${lib}/commons-discovery-0.2.jar"/>
+	<zipfileset src="${lib}/commons-logging-1.0.4.jar"/>
+	<zipfileset src="${lib}/dsn.jar"/>
+	<zipfileset src="${lib}/gimap.jar"/>
+	<zipfileset src="${lib}/imap.jar"/>
+	<zipfileset src="${lib}/jaxrpc.jar"/>
+	<zipfileset src="${lib}/jmock-1.1.0.jar"/>
+	<zipfileset src="${lib}/junit.jar"/>
+	<zipfileset src="${lib}/log4j-1.2.8.jar"/>
+	<zipfileset src="${lib}/mail.jar"/>
+	<zipfileset src="${lib}/mailapi.jar"/>
+	<zipfileset src="${lib}/mantisconnect-client-api-1.1.1.1.jar"/>
+	<zipfileset src="${lib}/pop3.jar"/>
+	<zipfileset src="${lib}/saaj.jar"/>
+	<zipfileset src="${lib}/smtp.jar"/>
+	<zipfileset src="${lib}/wsdl4j-1.5.1.jar"/>	
+    </jar>
+    <jar
+      destfile="${dist}/TraceGenerator.jar"
+      filesetmanifest="mergewithoutmain"
+      excludes="**/BeepBeepTest/*.class">
+        <manifest>
+            <attribute name="Main-Class" 
+              value="ca.uqac.info.trace.TraceGenerator"/>
+            <attribute name="Class-Path" value="."/>
+        </manifest>
+        <fileset dir="${build}"/>
+        <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-cli-1.2.jar"/>
+    </jar>
+  </target>
+  
+  <target name="dist" depends="create_run_jar" description="Create distribution">
+    <!-- Do nothing -->
+    
+  </target>
+
+<target name="clean" description="Clean up" >
+  <!-- Delete the ${build} and ${dist} directory trees -->
+  <delete dir="${build}"/>
+  <delete dir="${dist}"/>
+</target>
+</project>
