@@ -125,13 +125,12 @@ class EventNotifier implements PipeCallback<String>
 	  command = metadata.get("OnTrue");
 	  // Modified by Kim Lavoie
 	  // New metadata "ReportOn" help decide when to report bugs 
-	  //if(metadata.get("ReportOn").toLowerCase().equals("true") || metadata.get("ReportOn").toLowerCase().equals("both"));
-	  //{
+	  if(metadata.get("ReportOn").toLowerCase().equals("true") || metadata.get("ReportOn").toLowerCase().equals("both"));
+	  {
 		//Added by Raphael Laguerre
 		//Test the add of a bug to Mantis via its web service interface
-			
 		report.sendReport(metadata.get("Filename"), metadata.get("Description"), trace);	
-	  //}
+	  }
 	  //
 	}
         if (new_out == Monitor.Verdict.FALSE)
@@ -141,7 +140,7 @@ class EventNotifier implements PipeCallback<String>
 	  // New metadata "ReportOn" help decide when to report bugs 
 	  if(metadata.get("ReportOn").toLowerCase().equals("false") || metadata.get("ReportOn").toLowerCase().equals("both"));
 	  {
-		System.out.print(trace);
+		report.sendReport(metadata.get("Filename"), metadata.get("Description"), trace);
 	  }
 	  //
 	}
