@@ -1,0 +1,10 @@
+# ------------------------------------------------------------------
+# Example property
+# Eventually, parameter x is greater than 7
+#
+# @Caption("G7");
+# @Description("Greater than 7");
+# @ReportOn("true");
+# ------------------------------------------------------------------
+
+F (/message/x > 7)

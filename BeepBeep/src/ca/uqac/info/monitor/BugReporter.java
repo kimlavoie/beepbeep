@@ -26,33 +26,30 @@ class BugReporter{
 	protected GregorianCalendar dateDiscovered = new GregorianCalendar();
 	protected BufferedWriter outputFile;
 
-	public BugReporter(String specFile, String brokenProperty, String trace){
-		this.specFile = specFile;
-		this.trace = trace;
-		this.brokenProperty = brokenProperty;
+	public BugReporter(){
 		try{
 			File file = new File(DEFAULT_OUTPUT_FILE);
 			file.createNewFile();
 			this.outputFile = new BufferedWriter(new FileWriter(file));
 		} catch (Exception e){
-
+			e.printStackTrace();
 		}
 	}
 
-	public BugReporter(String specFile, String brokenProperty, String trace, String outputFile){
-		this.specFile = specFile;
-		this.trace = trace;
-		this.brokenProperty = brokenProperty;
+	public BugReporter(String outputFile){
 		try{
-			File file = new File(DEFAULT_OUTPUT_FILE);
+			File file = new File(outputFile);
 			file.createNewFile();
 			this.outputFile = new BufferedWriter(new FileWriter(file));
 		} catch (Exception e){
-			
+			e.printStackTrace();
 		}
 	}
 	
-	public void sendReport(){
+	public void sendReport(String specFile, String brokenProperty, String trace){
+		this.specFile = specFile;
+		this.trace = trace;
+		this.brokenProperty = brokenProperty;
 		try{
 			outputFile.write(formatReport());
 			outputFile.flush();

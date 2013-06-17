@@ -39,6 +39,7 @@ class EventNotifier implements PipeCallback<String>
   public long heapSize = 0;
   public int m_slowdown = 0;
   public String trace = new String();		// Modified by Kim Lavoie
+  private BugReporterMantisWS report = new BugReporterMantisWS(); // Added by Kim Lavoie
 
   public EventNotifier()
   {
@@ -128,8 +129,8 @@ class EventNotifier implements PipeCallback<String>
 	  //{
 		//Added by Raphael Laguerre
 		//Test the add of a bug to Mantis via its web service interface
-		BugReporterMantisWS report = new BugReporterMantisWS("GreaterThan7.ltlfo", "Greater than 7", trace, "http://localhost/mantis/api/soap/mantisconnect.php", 			"administrator", "pass");	
-		report.sendReport();	
+			
+		report.sendReport(metadata.get("Filename"), metadata.get("Description"), trace);	
 	  //}
 	  //
 	}
