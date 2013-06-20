@@ -1,0 +1,7 @@
+org.mantisbt.connect
+org.mantisbt.connect.ant.taskdefs
+org.mantisbt.connect.axis
+org.mantisbt.connect.model
+org.mantisbt.connect.text
+org.mantisbt.connect.ui
+org.mantisbt.connect.ui.swing
