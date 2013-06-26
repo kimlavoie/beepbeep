@@ -11,7 +11,6 @@
 package ca.uqac.info.monitor;
 
 import java.net.URL;
-
 import org.mantisbt.connect.IMCSession;
 import org.mantisbt.connect.MCException;
 import org.mantisbt.connect.axis.MCSession;
@@ -66,8 +65,11 @@ public class BugReporterMantisWS extends BugReporter {
 			issue.setDescription(brokenProperty);
 			issue.setSummary(specFile);		
 			issue.setCategory(category);
- 			issue.setAdditionalInformation(trace);
-			session.addIssue(issue);
+ 			//issue.setAdditionalInformation(trace);
+			session.addIssue(issue);			
+			byte[] content = trace.getBytes();  
+    			//Add the trace as an attachment of the bug
+			session.addIssueAttachment(session.getIdFromSummary(specFile), "trace", "txt", content);
 		}catch (MCException e) {
 			e.printStackTrace();
 		}		

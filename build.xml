@@ -63,7 +63,7 @@
 	<zipfileset src="${lib}/pop3.jar"/>
 	<zipfileset src="${lib}/saaj.jar"/>
 	<zipfileset src="${lib}/smtp.jar"/>
-	<zipfileset src="${lib}/wsdl4j-1.5.1.jar"/>	
+	<zipfileset src="${lib}/wsdl4j-1.5.1.jar"/>		
     </jar>
     <jar
       destfile="${dist}/TraceGenerator.jar"
