@@ -60,16 +60,18 @@ public class BugReporterMantisWS extends BugReporter {
 	
 
 	public void sendReport(String specFile, String brokenProperty, String trace){				
-		try{	
+		try{
 			IIssue issue = session.newIssue(projectID);
-			issue.setDescription(brokenProperty);
-			issue.setSummary(specFile);		
-			issue.setCategory(category);
- 			//issue.setAdditionalInformation(trace);
-			session.addIssue(issue);			
-			byte[] content = trace.getBytes();  
-    			//Add the trace as an attachment of the bug
-			session.addIssueAttachment(session.getIdFromSummary(specFile), "trace", "txt", content);
+			System.out.println(session.getIdFromSummary(specFile));	
+			if (session.getIdFromSummary(specFile)==0){ //Checks if the bug has already been reported		
+				issue.setDescription(brokenProperty);
+				issue.setSummary(specFile);		
+				issue.setCategory(category);
+	 			session.addIssue(issue);			
+				byte[] content = trace.getBytes();  
+	    			//Add the trace as an attachment of the bug
+				session.addIssueAttachment(session.getIdFromSummary(specFile), String.valueOf(session.getIdFromSummary(specFile)), "txt", content);
+			}			
 		}catch (MCException e) {
 			e.printStackTrace();
 		}		
